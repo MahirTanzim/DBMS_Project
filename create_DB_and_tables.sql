@@ -46,6 +46,8 @@ CREATE TABLE Attendance (
 CREATE TABLE Deduction (
     emp_id INT PRIMARY KEY,
     days_of_abs INT,
+    late_entries INT DEFAULT 0,
+    early_leaves INT DEFAULT 0;
     total_deduction DECIMAL(10,2),
     FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
 );
@@ -59,6 +61,9 @@ CREATE TABLE Payroll (
     bonus DECIMAL(10,2),
     allowance DECIMAL(10,2),
     overtime DECIMAL(10,2),
+    days_of_absent INT DEFAULT 0,
+    late_entries INT DEFAULT 0,
+    early_leaves INT DEFAULT 0;
     total_deduction DECIMAL(10,2),
     net_salary DECIMAL(10,2),
     payment_date DATE,
