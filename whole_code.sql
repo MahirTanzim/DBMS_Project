@@ -20,34 +20,6 @@ CREATE TABLE Employee (
     FOREIGN KEY (dept) REFERENCES Department(dept_id)
 );
 
--- Trigger: Update total_employee count when new employee added
-DELIMITER //
-CREATE TRIGGER trg_increment_employee_count
-AFTER INSERT ON Employee
-FOR EACH ROW
-BEGIN
-    UPDATE Department
-    SET total_employee = total_employee + 1
-    WHERE dept_id = NEW.dept;
-END;
-//
-DELIMITER ;
-
-
--- Trigger: Update total_employee count when employee removed
-DELIMITER //
-CREATE TRIGGER trg_decrement_employee_count
-AFTER DELETE ON Employee
-FOR EACH ROW
-BEGIN
-    UPDATE Department
-    SET total_employee = total_employee - 1
-    WHERE dept_id = OLD.dept;
-END;
-//
-DELIMITER ;
-
-
 -- 3. Salary Table
 CREATE TABLE Salary (
     emp_id INT PRIMARY KEY,
@@ -97,6 +69,34 @@ CREATE TABLE Payroll (
     payment_date DATE,
     FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
 );
+
+
+-- Trigger: Update total_employee count when new employee added
+DELIMITER //
+CREATE TRIGGER trg_increment_employee_count
+AFTER INSERT ON Employee
+FOR EACH ROW
+BEGIN
+    UPDATE Department
+    SET total_employee = total_employee + 1
+    WHERE dept_id = NEW.dept;
+END;
+//
+DELIMITER ;
+
+
+-- Trigger: Update total_employee count when employee removed
+DELIMITER //
+CREATE TRIGGER trg_decrement_employee_count
+AFTER DELETE ON Employee
+FOR EACH ROW
+BEGIN
+    UPDATE Department
+    SET total_employee = total_employee - 1
+    WHERE dept_id = OLD.dept;
+END;
+//
+DELIMITER ;
 
 DELIMITER //
 DROP PROCEDURE IF EXISTS update_deductions_and_payroll //

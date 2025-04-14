@@ -12,23 +12,14 @@ GROUP BY d.dept_name, p.month;
 CREATE VIEW MonthlyAttendanceSummary AS
 SELECT 
     e.emp_id,
-    e.emp_name,
+    e.name,
     DATE_FORMAT(a.date, '%M-%Y') AS month,
     SUM(a.status = 'present') AS present_days,
     SUM(a.status = 'absent') AS absent_days
 FROM Attendance a
 JOIN Employee e ON a.emp_id = e.emp_id
-GROUP BY e.emp_id, e.emp_name, DATE_FORMAT(a.date, '%M-%Y');
+GROUP BY e.emp_id, e.name, DATE_FORMAT(a.date, '%M-%Y');
 
--- Monthly Attendance Summary View
-CREATE VIEW AttendanceSummary AS
-SELECT 
-    emp_id, 
-    DATE_FORMAT(date, '%M-%Y') AS month,
-    SUM(status = 'present') AS present_days,
-    SUM(status = 'absent') AS absent_days
-FROM Attendance
-GROUP BY emp_id, DATE_FORMAT(date, '%M-%Y');
 
 -- Employee Salary Report View
 CREATE VIEW EmployeeSalaryReport AS
@@ -47,7 +38,7 @@ JOIN Employee e ON p.emp_id = e.emp_id;
 CREATE OR REPLACE VIEW LateSummary AS
 SELECT 
     a.emp_id,
-    e.emp_name,
+    e.name,
     DATE_FORMAT(a.date, '%M-%Y') AS month,
     COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) AS late_entries,
     COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) AS early_leaves,
@@ -62,5 +53,5 @@ JOIN
 WHERE 
     a.status = 'present'
 GROUP BY 
-    a.emp_id, e.emp_name, DATE_FORMAT(a.date, '%M-%Y');
+    a.emp_id, e.name, DATE_FORMAT(a.date, '%M-%Y');
 

@@ -1,3 +1,4 @@
+-- procedure for deduction and payroll 
 DELIMITER //
 DROP PROCEDURE IF EXISTS update_deductions_and_payroll //
 CREATE PROCEDURE update_deductions_and_payroll(IN target_emp INT, IN target_month VARCHAR(20))
