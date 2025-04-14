@@ -35,7 +35,7 @@ FROM Payroll p
 JOIN Employee e ON p.emp_id = e.emp_id;
 
 -- LateSummary
-CREATE OR REPLACE VIEW LateSummary AS
+CREATE VIEW LateSummary AS
 SELECT 
     a.emp_id,
     e.name,

@@ -167,8 +167,8 @@ BEGIN
               AND MONTH(date) = month_num;
 
             
-            SET late_penalty = late_count * 50.00;       -- Calculate penalties
-            SET early_penalty = early_leave_count * 50.00; 
+            SET late_penalty = late_count * 500.00;       -- Calculate penalties
+            SET early_penalty = early_leave_count * 500.00; 
 
             
             SELECT base_salary, bonus, allowance, overtime_rate  -- Get salary data
@@ -212,6 +212,32 @@ END //
 DELIMITER ;
 
 
+
+DELIMITER //
+
+CREATE PROCEDURE generate_full_payroll(IN target_month VARCHAR(20))
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE emp_id_val INT;
+    DECLARE emp_cursor CURSOR FOR SELECT emp_id FROM Employee;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN emp_cursor;
+
+    payroll_loop: LOOP
+        FETCH emp_cursor INTO emp_id_val;
+        IF done THEN
+            LEAVE payroll_loop;
+        END IF;
+        CALL update_deductions_and_payroll(emp_id_val, target_month);
+    END LOOP;
+
+    CLOSE emp_cursor;
+END;
+//
+
+DELIMITER ;
+
 -- Department-wise Salary Report 
 CREATE VIEW DepartmentSalaryReport AS
 SELECT d.dept_name, p.month, SUM(p.net_salary) AS total_paid
@@ -249,17 +275,17 @@ FROM Payroll p
 JOIN Employee e ON p.emp_id = e.emp_id;
 
 -- LateSummary
-CREATE OR REPLACE VIEW LateSummary AS
+CREATE VIEW LateSummary AS
 SELECT 
     a.emp_id,
     e.name,
     DATE_FORMAT(a.date, '%M-%Y') AS month,
     COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) AS late_entries,
     COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) AS early_leaves,
-    COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) * 50 AS late_penalty,
-    COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) * 50 AS early_leave_penalty,
-    (COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) * 50 +
-     COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) * 50) AS total_penalty
+    COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) * 500 AS late_penalty,
+    COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) * 500 AS early_leave_penalty,
+    (COUNT(CASE WHEN a.time_in > '09:15:00' THEN 1 END) * 500 +
+     COUNT(CASE WHEN a.time_out < '17:00:00' THEN 1 END) * 500) AS total_penalty
 FROM 
     Attendance a
 JOIN 
@@ -268,3 +294,6 @@ WHERE
     a.status = 'present'
 GROUP BY 
     a.emp_id, e.name, DATE_FORMAT(a.date, '%M-%Y');
+
+
+

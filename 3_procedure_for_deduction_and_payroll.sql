@@ -18,15 +18,11 @@ BEGIN
     DECLARE early_penalty DECIMAL(10,2) DEFAULT 0;
     DECLARE month_num INT;
     DECLARE emp_exists INT DEFAULT 0;
-    
-    
     SELECT COUNT(*) INTO emp_exists FROM Employee WHERE emp_id = target_emp; --  Check if employee exists
-    
     IF emp_exists = 0 THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Employee does not exist';
     ELSE
-        
         SET month_num = MONTH(STR_TO_DATE(CONCAT('01-', target_month), '%d-%M-%Y')); -- Convert month string to month number
         
         IF month_num IS NULL THEN
@@ -46,7 +42,7 @@ BEGIN
               AND MONTH(date) = month_num;
 
           
-            SELECT COUNT(*) INTO late_count   --  3. Count late and early leaves
+            SELECT COUNT(*) INTO late_count   --  Count late in and early leaves
             FROM Attendance
             WHERE emp_id = target_emp AND status = 'present'
               AND time_in > '09:15:00'
@@ -80,7 +76,6 @@ BEGIN
                 early_leaves = early_leave_count,
                 total_deduction = deduct;
 
-            
             SET gross = base + bonus_val + allowance_val + (rate * total_ot);    -- Compute payroll
             SET net = gross - deduct;
 
@@ -102,3 +97,31 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE generate_full_payroll(IN target_month VARCHAR(20))
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE emp_id_val INT;
+    DECLARE emp_cursor CURSOR FOR SELECT emp_id FROM Employee;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN emp_cursor;
+
+    payroll_loop: LOOP
+        FETCH emp_cursor INTO emp_id_val;
+        IF done THEN
+            LEAVE payroll_loop;
+        END IF;
+        CALL update_deductions_and_payroll(emp_id_val, target_month);
+    END LOOP;
+
+    CLOSE emp_cursor;
+END;
+//
+
+DELIMITER ;
+
