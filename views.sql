@@ -25,11 +25,11 @@ GROUP BY e.emp_id, e.name, DATE_FORMAT(a.date, '%M-%Y');
 CREATE VIEW EmployeeSalaryReport AS
 SELECT 
     e.emp_id,
-    e.emp_name,
+    e.name,
     p.month,
-    p.basic_salary,
-    p.allowances,
-    p.deductions,
+    p.base_salary,
+    p.allowance,
+    p.total_deduction,
     p.net_salary
 FROM Payroll p
 JOIN Employee e ON p.emp_id = e.emp_id;
@@ -54,4 +54,3 @@ WHERE
     a.status = 'present'
 GROUP BY 
     a.emp_id, e.name, DATE_FORMAT(a.date, '%M-%Y');
-

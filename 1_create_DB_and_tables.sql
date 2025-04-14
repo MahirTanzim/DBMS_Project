@@ -1,16 +1,20 @@
 -- Create Database
+
+Drop Database if exists salary_management;
 CREATE DATABASE salary_management;
 USE salary_management;
 
--- 1. Department Table
-CREATE TABLE Department (
+
+
+CREATE TABLE Department (       --Department Table
     dept_id INT PRIMARY KEY AUTO_INCREMENT,
     dept_name VARCHAR(100) NOT NULL,
     total_employee INT DEFAULT 0
 );
 
--- 2. Employee Table
-CREATE TABLE Employee (
+
+
+CREATE TABLE Employee (     --Employee Table
     emp_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
     dept INT,
@@ -20,8 +24,7 @@ CREATE TABLE Employee (
 
 
 
--- 3. Salary Table
-CREATE TABLE Salary (
+CREATE TABLE Salary (       --Salary Table
     emp_id INT PRIMARY KEY,
     base_salary DECIMAL(10,2),
     bonus DECIMAL(10,2),
@@ -30,30 +33,32 @@ CREATE TABLE Salary (
     FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
 );
 
--- 4. Attendance Table
-CREATE TABLE Attendance (
+
+
+CREATE TABLE Attendance (       --Attendance Table
     id INT PRIMARY KEY AUTO_INCREMENT,
     emp_id INT,
     date DATE,
-    status ENUM('present', 'absent'),
+    status ENUM('present', 'absent'), 
     overtime INT DEFAULT 0,
     time_in TIME,
     time_out TIME,
-    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id) 
 );
 
--- 5. Deduction Table (auto-managed)
-CREATE TABLE Deduction (
+
+
+CREATE TABLE Deduction (        --Deduction Table
     emp_id INT PRIMARY KEY,
     days_of_abs INT,
     late_entries INT DEFAULT 0,
-    early_leaves INT DEFAULT 0;
+    early_leaves INT DEFAULT 0,
     total_deduction DECIMAL(10,2),
     FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
 );
 
--- 6. Payroll Table (auto-managed)
-CREATE TABLE Payroll (
+
+CREATE TABLE Payroll (      --Payroll Table
     payroll_id INT PRIMARY KEY AUTO_INCREMENT,
     emp_id INT,
     month VARCHAR(20),
@@ -63,10 +68,9 @@ CREATE TABLE Payroll (
     overtime DECIMAL(10,2),
     days_of_absent INT DEFAULT 0,
     late_entries INT DEFAULT 0,
-    early_leaves INT DEFAULT 0;
+    early_leaves INT DEFAULT 0,
     total_deduction DECIMAL(10,2),
     net_salary DECIMAL(10,2),
     payment_date DATE,
     FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
 );
-

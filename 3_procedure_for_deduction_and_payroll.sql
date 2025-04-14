@@ -1,4 +1,4 @@
--- procedure for deduction and payroll 
+--  procedure for deduction and payroll table
 DELIMITER //
 DROP PROCEDURE IF EXISTS update_deductions_and_payroll //
 CREATE PROCEDURE update_deductions_and_payroll(IN target_emp INT, IN target_month VARCHAR(20))
@@ -19,34 +19,34 @@ BEGIN
     DECLARE month_num INT;
     DECLARE emp_exists INT DEFAULT 0;
     
-    -- Validate employee exists
-    SELECT COUNT(*) INTO emp_exists FROM Employee WHERE emp_id = target_emp;
+    
+    SELECT COUNT(*) INTO emp_exists FROM Employee WHERE emp_id = target_emp; --  Check if employee exists
     
     IF emp_exists = 0 THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Employee does not exist';
     ELSE
-        -- Convert month string to month number
-        SET month_num = MONTH(STR_TO_DATE(CONCAT('01-', target_month), '%d-%M-%Y'));
+        
+        SET month_num = MONTH(STR_TO_DATE(CONCAT('01-', target_month), '%d-%M-%Y')); -- Convert month string to month number
         
         IF month_num IS NULL THEN
             SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Invalid month format';
         ELSE
-            -- 1. Count absent days
-            SELECT COUNT(*) INTO abs_days
+            
+            SELECT COUNT(*) INTO abs_days -- Count absent days
             FROM Attendance
             WHERE emp_id = target_emp AND status = 'absent'
               AND MONTH(date) = month_num;
 
-            -- 2. Sum total overtime (handle NULL values)
-            SELECT IFNULL(SUM(overtime), 0) INTO total_ot
+           
+            SELECT IFNULL(SUM(overtime), 0) INTO total_ot  -- Sum total overtime (handle NULL values)
             FROM Attendance
             WHERE emp_id = target_emp AND status = 'present'
               AND MONTH(date) = month_num;
 
-            -- 3. Count late and early leaves
-            SELECT COUNT(*) INTO late_count
+          
+            SELECT COUNT(*) INTO late_count   --  3. Count late and early leaves
             FROM Attendance
             WHERE emp_id = target_emp AND status = 'present'
               AND time_in > '09:15:00'
@@ -58,21 +58,21 @@ BEGIN
               AND time_out < '17:00:00'
               AND MONTH(date) = month_num;
 
-            -- 4. Calculate penalties
-            SET late_penalty = late_count * 50.00;
-            SET early_penalty = early_leave_count * 50.00;
+            
+            SET late_penalty = late_count * 50.00;       -- Calculate penalties
+            SET early_penalty = early_leave_count * 50.00; 
 
-            -- 5. Get salary data
-            SELECT base_salary, bonus, allowance, overtime_rate 
+            
+            SELECT base_salary, bonus, allowance, overtime_rate  -- Get salary data
             INTO base, bonus_val, allowance_val, rate
             FROM Salary 
             WHERE emp_id = target_emp;
 
-            -- 6. Calculate deduction
-            SET deduct = (base / 30) * abs_days + late_penalty + early_penalty;
+            
+            SET deduct = (base / 30) * abs_days + late_penalty + early_penalty;     --  Calculate deduction
 
-            -- 7. Update Deduction Table with new columns
-            INSERT INTO Deduction (emp_id, days_of_abs, late_entries, early_leaves, total_deduction)
+            
+            INSERT INTO Deduction (emp_id, days_of_abs, late_entries, early_leaves, total_deduction)   -- Update Deduction Table with new columns
             VALUES (target_emp, abs_days, late_count, early_leave_count, deduct)
             ON DUPLICATE KEY UPDATE
                 days_of_abs = abs_days,
@@ -80,12 +80,12 @@ BEGIN
                 early_leaves = early_leave_count,
                 total_deduction = deduct;
 
-            -- 8. Compute payroll
-            SET gross = base + bonus_val + allowance_val + (rate * total_ot);
+            
+            SET gross = base + bonus_val + allowance_val + (rate * total_ot);    -- Compute payroll
             SET net = gross - deduct;
 
-            -- 9. Update Payroll table with new columns
-            DELETE FROM Payroll 
+            
+            DELETE FROM Payroll         -- Update Payroll table with new columns to avoid duplicates
             WHERE emp_id = target_emp AND month = target_month;
             
             INSERT INTO Payroll (

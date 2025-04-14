@@ -1,6 +1,6 @@
--- Trigger: Update total_employee count when new employee added
+
 DELIMITER //
-CREATE TRIGGER trg_increment_employee_count
+CREATE TRIGGER trg_increase_employee_count  -- Trigger: Update total_employee count in each dept when new employee added
 AFTER INSERT ON Employee
 FOR EACH ROW
 BEGIN
@@ -12,9 +12,9 @@ END;
 DELIMITER ;
 
 
--- Trigger: Update total_employee count when employee removed
+
 DELIMITER //
-CREATE TRIGGER trg_decrement_employee_count
+CREATE TRIGGER trg_decrease_employee_count      -- Trigger: Update total_employee count in each dept when employee removed
 AFTER DELETE ON Employee
 FOR EACH ROW
 BEGIN
